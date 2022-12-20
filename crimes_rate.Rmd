@@ -1,0 +1,315 @@
+---
+title: "Crime Rate in Maryland USA"
+author: "George.B"
+date: "2022-12-15"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# SUMMARY
+##### problem
+* What is the total numbers of crimes committed in Maryland from 2016 to 2022, What Cities in Maryland are mostly affected by these crimes and how do we reduce the crime rate in these Cities.
+
+#### research 
+* According to statista.com, research show that Maryland has an unemployment rate as follows:-
+  * 4.3% unemployment rate in 2016.
+  * 4% in 2017
+  * 3.6% in 2018
+  * 83.4% in 2019
+  * 6.7% in 2020
+  * 5.8% in 2021
+ 
+* according to statista.com in 2021, the educational section research shows individual's educational qualification level by percentage:-
+ * 3.7% of Maryland  residents/indigenes could not finish or do not attend the 9th grade.
+ * 5.2% goes to individual between 9th grade to 12th grade but no diploma.
+ * 23.8% graduated high school(includes equivancy).
+ * 17.8% has some college but no degree.
+ * 6.9% has associate's degree.
+ * 22.4% has bachelor's degree.
+ * 20.2% are graduates or has professional degree.
+ 
+* Cost of living in Maryland USA is high with:-
+  * rent and utilities - one person = $1300 and forfamily = $2249.
+  * food - one person = $500 and family = $1400.
+  * Transport - 8one person = $100 and family = $250.
+  
+* with a average salary of $50,000 to $60,000 yearly.
+  * salary after tax $4500 monthly.
+ 
+```{r include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(skimr)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(colorspace)
+library(here)
+```
+
+```{r include=FALSE}
+library(readr)
+crime1 <- read_csv("C:/Users/pc/Desktop/crime1.csv")
+View(crime1)
+```
+
+```{r include=FALSE}
+crime1$time_date <- mdy_hm(crime1$Start_Date_Time)
+```
+
+```{r include=FALSE}
+crime1$month <- format(as.Date(crime1$time_date), "%m")
+crime1$day <- format(as.Date(crime1$time_date), "%d")
+crime1$year <- format(as.Date(crime1$time_date), "%Y")
+crime1$days_of_the_week <- format(as.Date(crime1$time_date), "%A")
+```
+
+## Analysis and Data Visualisation
+
+```{r echo=FALSE}
+crimes <- crime1 %>% 
+  group_by(year) %>% 
+  summarise(total_yearly_victims=sum(victims))
+print(crimes)
+```
+
+```{r echo=FALSE}
+ggplot(data=crimes)+
+  geom_point(mapping = aes(x=year, y=total_yearly_victims, color=year))+
+  labs(title = "Yearly Victims in Maryland", 
+       subtitle = "Total Victim Affected by Crimes on Year Bases.")
+```
+
+* The table above shows the total records of individuals affected by crimes in Maryland.
+* The data visualization shows that 
+  - 2016 and 2022 has the lowest number of crimes committed below 30,000 crimes each, while 
+  - 2017,2018 and 2019 record crimes committed of over 50,000 crimes committed each in Maryland alone.
+
+
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+crime001 <- crime1 %>% 
+  group_by(month, year,) %>% 
+  summarise(total_yearly_victims=sum(victims))
+View(crime001)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+crimes001 <- crime001 %>% 
+  group_by(total_yearly_victims,month,year) %>% 
+  summarise(year_vic=max(total_yearly_victims)) %>% 
+  tail(10)
+print(crimes001)
+```
+
+* The table above shows the months with the highest number of crimes recorded in each year in Maryland.  
+
+
+
+
+```{r include=FALSE}
+crime01 <- crime1 %>% 
+  group_by(year,crime_name1, city) %>% 
+  drop_na() %>% 
+  summarise(total_yearly_victims=sum(victims))
+view(crime01)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+crimes1 <- crime01 %>% 
+  group_by(total_yearly_victims,year, crime_name1,city) %>% 
+  drop_na() %>% 
+  summarise(highest_yearly_victims=max(total_yearly_victims)) %>% 
+  tail(10)
+print(crimes1)
+```
+
+```{r echo=FALSE}
+ggplot(data = crimes1, aes(x=crime_name1, highest_yearly_victims, fill=year))+
+  geom_col(position = "dodge")+
+  facet_wrap(~city)+
+  labs(title = "Yearly: Crimes by Cities", 
+       subtitle = "CIties in Maryland with the Highest Number of Crimes")
+```
+
+* This table shows that **Crime Against Property** has the highest number committed between 2017 to 2021.
+* The chart shows that Silver Spring has the highest number of crimes(crimes against property) with a record of   2236 to 4645 from 2017 to 2021.
+* While Rockville follows with crimes recorded(crimes against property) between 2102 to 2216 from 2017 to 2021.
+
+
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+crime02 <- crime1 %>% 
+  group_by(year,crime_name2, city) %>% 
+  drop_na() %>% 
+  summarise(total_yearly_victims=sum(victims))
+view(crime02)
+```
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+crimes2 <- crime02 %>% 
+  group_by(total_yearly_victims,year, crime_name2,city) %>% 
+  drop_na() %>% 
+  summarise(highest_yearly_victims=max(total_yearly_victims)) %>% 
+  tail(10)
+print(crimes2)
+```
+
+```{r echo=FALSE}
+ggplot(data = crimes2, aes(x=crime_name2, highest_yearly_victims, fill=year))+
+  geom_col(position = "dodge")+
+  theme(axis.text.x = element_text(angle = 45))+
+  facet_wrap(~city)+
+  labs(title = "Yearly: Crimes by Cities", 
+       subtitle = "CIties in Maryland with the Highest Number of Crimes")
+```
+
+* This table shows that **Theft from Motor Vehicle** and **All Other Offenses** has the highest number committed between 2017 to 2021.
+* The chart above shows that Silver Spring still has the highest number of crime in terms of Theft from Motor Vehicle and All Other Offenses with a record between 984 to 1416 in the pass 5 years.
+ While Rockville follows again with a record number of 980 to 1160 crime from Theft from Motor Vehicle** and **All Other Offenses in the pass five years.
+
+
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=TRUE}
+crime03 <- crime1 %>% 
+  group_by(year, crime_name3, city) %>% 
+  drop_na() %>% 
+  summarise(total_yearly_victims=sum(victims))
+view(crime03)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+crimes3 <- crime03 %>% 
+  group_by(total_yearly_victims,year, crime_name3,city) %>% 
+  drop_na() %>% 
+  summarise(highest_yearly_victims=max(total_yearly_victims)) %>% 
+  tail(10)
+print(crimes3)
+```
+
+```{r echo=FALSE}
+ggplot(data = crimes3, aes(x=crime_name3, highest_yearly_victims, fill=year))+
+  geom_col(position = "dodge")+
+  theme(axis.text.x = element_text(angle = 45))+
+  facet_wrap(~city)+
+  labs(title = "Yearly: Crimes by Cities", 
+       subtitle = "CIties in Maryland with the Highest Number of Crimes")
+```
+
+* This table shows that **Assault**, **Drugs** and **Larceny** has the highest number committed between 2017 to 2021.
+* The above chart shows that Silver still has the highest number of Assault,Drugs and Larceny crimes committed in the state of Maryland with Assault and Drugs having  a crime record of 494 and 516 each, while Larceny has a record of over 550 to 1389 in the pass 5 years.
+* And Rockville has the second highest number of Larceny record of 501 to 559, and has no high record of Assault and Drugs in the passed 5 years
+
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+crime_logical2 <- crime1 %>% 
+  group_by(days_of_the_week) %>% 
+  drop_na() %>% 
+  summarise(total_crimes_committed_daily_at_morning=sum(committed_at_morning))
+print(crime_logical2)
+```
+
+```{r echo=FALSE}
+ggplot(data = crime_logical2)+
+  geom_point(mapping = aes(x=days_of_the_week, y=total_crimes_committed_daily_at_morning))+
+  theme(axis.text.x = element_text(angle = 50))+
+  facet_wrap(~days_of_the_week)+
+  labs(title = "Weekly Crimes", 
+       subtitle = "Number of Crimes committed in the Morning from 2016 to 2022")
+```
+
+* This table shows the total number of crimes committed weekly committed in the morning from 2016 to 2022.
+* The data chart shows that **Mondays**, **Fridays** and **Saturdays** has higher crimes are been committed in the morning.
+* While **Sunday** has the lowest number o crime committed in the morning in the pass six years.
+
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+crime_logical3 <- crime1 %>% 
+  group_by(month) %>% 
+  drop_na() %>% 
+  summarise(total_crimes_committed_daily_at_morning=sum(committed_at_morning))
+print(crime_logical3)
+```
+
+```{r echo=FALSE}
+ggplot(data = crime_logical3)+
+  geom_point(mapping = aes(x=month, y=total_crimes_committed_daily_at_morning))+
+  theme(axis.text.x = element_text(angle = 50))+
+  facet_wrap(~month)+
+  labs(title = "Total Monthly Crimes", 
+       subtitle = "Number of Crimes committed in the Morning from 2016 to 2022")
+```
+
+* This table shows the total number of crimes committed in the morning  Monthly from 2016 to 2022.
+* The chart shows that the 1st quarter of each year(from 2016 to 2022),has a low number of crime committed in the morning(below 3,000 each),except for the month of **April** that has a high number of crime of 3279.
+* The 2nd quarter of the each year has a very high number of crime committed in the morning between 3200 to 3700 in the 2nd quarter of each year.
+* and 3rd quarter has a low number crime committed in the morning with a record below 3100 for each of the last 4 month.
+
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+crime_logical4 <- crime1 %>% 
+  group_by(year) %>% 
+  drop_na() %>% 
+  summarise(total_crimes_committed_daily_at_morning=sum(committed_at_morning))
+print(crime_logical4)
+```
+
+```{r echo=FALSE}
+ggplot(data = crime_logical4)+
+  geom_point(mapping = aes(x=year, y=total_crimes_committed_daily_at_morning))+
+  theme(axis.text.x = element_text(angle = 50))+
+  facet_wrap(~year)+
+  labs(title = "Total Year Crimes", 
+       subtitle = "Number of Crimes Committed in the morning from 2016 to 2022")
+```
+
+* This table shows the total number of crimes committed in the morning  Yearly from 2016 to 2022.
+* 2016 and 2022 has the lowest number of crime committed in the morning with a record of 2016(113) and 2022(3939) respectfully.
+* While from 2017 to 2021 record a very high number of crime committed in Maryland with a record between 6100 to 7700.
+
+
+
+
+```{r echo=FALSE}
+ggplot(data = crime1)+
+   geom_bar(mapping = aes(x=agency, fill=year))+
+   theme(axis.text.x = element_text(angle = 50))+
+   facet_wrap(~committed_at_morning)+
+   labs(title = "Crime Recorded by Agencies",
+        subtitle = "Total Amount of Crime Recorded by Local Authorities")
+```
+
+* The chart shows that crime cases recorded by the Agencies in Maryland.
+* Montgomery County Police Department(MCPD) has the highest number of crime case record the pass six years, with over 150,000 crime between Afternoon and Night and over 80,000 crime been done in the morning hours of each day.
+* While Greenbelt Police Department(GPD)and the Rockville Police Department(RCPD) has recorded crimes of over 8,000 case both from from morning crime and Afternoon, Night crimes.
+
+
+
+
+## RECOMMENDATION
+
+#### **solution**
+* Unemployment: the state of Maryland has a healthy unemployment rate between 3% and 5%.
+ - The Government of Maryland should invite investors to the state thereby creating more jobs opportunities for the residence 
+ - create a system that makes it easy for individual to obtain loan and grant for startup business, and the Government should create a strong supervision term to supervise the business of any individual who obtained grant or loan from the them.
+
+* Educational sector:-
+ - with only 22% people living in Maryland having a degree and 20% graduate of having a professional degree.
+ _ the Government should create a better educational system that fight against bully, discrimination, Racism etc.
+ _ make sure the tuition fees for are affordable by parent.
+ 
+* Cost of living:- with Maryland cost of living on the high side.
+ _ The Government should help by increasing the minimum wage.
